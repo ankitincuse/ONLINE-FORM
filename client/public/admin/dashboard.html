@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Incusehr</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            max-height: 50px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .view-btn {
+            background-color: #007bff;
+        }
+        .export-btn {
+            background-color: #28a745;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .toolbar {
+            margin-bottom: 20px;
+        }
+        .toolbar button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="../assets/logo.png" alt="Incusehr Logo" class="logo">
+        <div class="nav-buttons">
+            <button class="export-btn" onclick="exportToExcel()">Export to Excel</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Form Submissions</h2>
+            <div class="toolbar">
+                <button onclick="exportToExcel()" class="btn btn-primary">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search by name, mobile number, or email..." oninput="filterSubmissions()">
+            </div>
+            <table id="submissionsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Mobile Number</th>
+                        <th>Submission Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="submissionsBody">
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for viewing details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+        });
+
+        // Load submissions
+        async function loadSubmissions() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please log in again');
+                    window.location.href = '/admin/login.html';
+                    return;
+                }
+
+                const response = await fetch('/api/admin/submissions', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to load submissions');
+                }
+
+                const data = await response.json();
+                displaySubmissions(data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Display submissions in table
+        function displaySubmissions(submissions) {
+            const tbody = document.getElementById('submissionsBody');
+            tbody.innerHTML = '';
+
+            submissions.forEach(submission => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${submission.full_name}</td>
+                    <td>${submission.mobile_number}</td>
+                    <td>${new Date(submission.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="view-btn" onclick="viewDetails(${submission.id})">View Details</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // View details modal
+        async function viewDetails(id) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please log in again');
+                    window.location.href = '/admin/login.html';
+                    return;
+                }
+
+                const response = await fetch(`/api/admin/submission/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to load details');
+                }
+
+                const data = await response.json();
+                const modal = document.getElementById('detailsModal');
+                const content = document.getElementById('modalContent');
+                
+                content.innerHTML = `
+                    <h2>Submission Details</h2>
+                    <h3>Personal Information</h3>
+                    <p><strong>Name:</strong> ${data.full_name}</p>
+                    <p><strong>Mobile:</strong> ${data.mobile_number}</p>
+                    <p><strong>Address:</strong> ${data.address}</p>
+                    <p><strong>DOB:</strong> ${data.dob}</p>
+                    <p><strong>Joining Date:</strong> ${data.joining_date}</p>
+                    <p><strong>Aadhar Number:</strong> ${data.aadhar_number}</p>
+                    <p><strong>Father's Name:</strong> ${data.father_name}</p>
+
+                    <h3>Bank Details</h3>
+                    <p><strong>Bank Name:</strong> ${data.bank_name}</p>
+                    <p><strong>Account Number:</strong> ${data.account_number}</p>
+                    <p><strong>IFSC Code:</strong> ${data.ifsc_code}</p>
+
+                    <h3>Academic Details</h3>
+                    ${data.academic_details.map(academic => `
+                        <div style="margin-bottom: 10px;">
+                            <p><strong>Qualification:</strong> ${academic.qualification}</p>
+                            <p><strong>College:</strong> ${academic.college}</p>
+                            <p><strong>Passing Year:</strong> ${academic.passing_year}</p>
+                            <p><strong>Percentage:</strong> ${academic.percentage}%</p>
+                        </div>
+                    `).join('')}
+
+                    <h3>References</h3>
+                    ${data.reference_details.map(ref => `
+                        <div style="margin-bottom: 10px;">
+                            <p><strong>Name:</strong> ${ref.name}</p>
+                            <p><strong>Mobile:</strong> ${ref.mobile_number}</p>
+                            <p><strong>Relation:</strong> ${ref.relation}</p>
+                        </div>
+                    `).join('')}
+
+                    <h3>Documents</h3>
+                    <p><strong>Passport Photo:</strong> <a href="${data.passport_photo_url}" target="_blank">View</a></p>
+                    <p><strong>Aadhar Card:</strong> <a href="${data.aadhar_card_url}" target="_blank">View</a></p>
+                    <p><strong>Bank Document:</strong> <a href="${data.bank_details_url}" target="_blank">View</a></p>
+                `;
+
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        // Export to Excel
+        async function exportToExcel() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please log in again');
+                    window.location.href = '/admin/login.html';
+                    return;
+                }
+
+                console.log('Starting export...');
+                const response = await fetch('/api/admin/export', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error('Export failed:', error);
+                    throw new Error(error.error || 'Export failed');
+                }
+
+                console.log('Export successful, creating blob...');
+                const blob = await response.blob();
+                
+                console.log('Creating download link...');
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'form_data.xlsx';
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                console.log('Download complete');
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export data: ' + error.message);
+            }
+        }
+
+        // Search functionality
+        function filterSubmissions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.getElementById('submissionsBody').getElementsByTagName('tr');
+
+            Array.from(rows).forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/admin/login.html';
+        }
+
+        // Initialize
+        loadSubmissions();
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

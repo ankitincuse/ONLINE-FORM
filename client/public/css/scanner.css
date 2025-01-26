@@ -1,0 +1,136 @@
+.scanner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.scanner-container video {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+.scanner-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.scan-region {
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.scan-region::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    animation: scanning 2s linear infinite;
+}
+
+@keyframes scanning {
+    0% {
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+    25% {
+        clip-path: polygon(0 0, 100% 0, 100% 25%, 0 25%);
+    }
+    50% {
+        clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+    }
+    75% {
+        clip-path: polygon(0 0, 100% 0, 100% 75%, 0 75%);
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+}
+
+.scanner-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.scanner-controls button {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.scanner-controls button:hover {
+    background: #1557b0;
+}
+
+.scanner-controls .capture-btn {
+    background: #34a853;
+}
+
+.scanner-controls .capture-btn:hover {
+    background: #2d8e47;
+}
+
+.scanner-controls .close-scanner-btn {
+    background: #ea4335;
+}
+
+.scanner-controls .close-scanner-btn:hover {
+    background: #d33828;
+}
+
+/* Passport mode specific styles */
+.scanner-container.passport-mode .scan-region {
+    border-color: #34a853;
+}
+
+.scanner-container.passport-mode .scan-region::after {
+    content: 'Center your face within the frame';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* Document mode specific styles */
+.scanner-container.document-mode .scan-region {
+    border-color: #1a73e8;
+}
+
+.scanner-container.document-mode .scan-region::after {
+    content: 'Align document edges with the frame';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}

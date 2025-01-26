@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="40" viewBox="0 0 150 40">
+  <style>
+    .logo-text { font-family: Arial, sans-serif; font-weight: bold; }
+  </style>
+  
+  <!-- Main logo container -->
+  <g transform="translate(5,5)">
+    <!-- Icon -->
+    <circle cx="15" cy="15" r="15" fill="#1a73e8"/>
+    <path d="M8,15 h14 M15,8 v14" stroke="white" stroke-width="2"/>
+    
+    <!-- Text -->
+    <text x="40" y="20" class="logo-text" font-size="18" fill="#1a73e8">TalentTrack</text>
+  </g>
+</svg>

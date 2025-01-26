@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "client/public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/server.js"
+    },
+    {
+      "src": "/admin",
+      "dest": "client/public/admin/login.html"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "client/public/admin/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "client/public/$1"
+    }
+  ]
+}
