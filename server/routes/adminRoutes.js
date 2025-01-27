@@ -1,23 +1,142 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const supabase = require('../config/supabase');
-const ExcelJS = require('exceljs');
+const jwt = require('jsonwebtoken');
+const XLSX = require('xlsx');
+const path = require('path');
+const fs = require('fs');
 
 // JWT Secret
-const JWT_SECRET = 'your-secret-key-123'; // We'll move this to .env later
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-123';
 
-// Middleware to verify admin token
-const authenticateToken = (req, res, next) => {
-    const bearerHeader = req.headers['authorization'];
-    if (!bearerHeader) {
-        return res.status(401).json({ error: 'No token provided' });
+// Max login attempts before locking
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
+
+// Admin login route
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        console.log('Login attempt for username:', username);
+
+        // Simple validation
+        if (!username || !password) {
+            return res.status(400).json({
+                success: false,
+                error: 'Username and password are required'
+            });
+        }
+
+        // Query admin user
+        const { data: users, error } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('username', username)
+            .single();
+
+        if (error) {
+            console.error('Database error:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Database error'
+            });
+        }
+
+        if (!users) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials'
+            });
+        }
+
+        const admin = users;
+
+        // Check if account is locked
+        if (admin.locked_until && new Date(admin.locked_until) > new Date()) {
+            const remainingTime = Math.ceil((new Date(admin.locked_until) - new Date()) / 1000 / 60);
+            return res.status(401).json({
+                success: false,
+                error: `Account is locked. Try again in ${remainingTime} minutes`
+            });
+        }
+
+        // Verify password
+        const { data: verified, error: pwError } = await supabase
+            .rpc('verify_password', {
+                p_username: username,
+                p_password: password
+            });
+
+        if (pwError || !verified) {
+            // Increment login attempts
+            const attempts = (admin.login_attempts || 0) + 1;
+            const updates = {
+                login_attempts: attempts
+            };
+
+            // Lock account if max attempts reached
+            if (attempts >= MAX_LOGIN_ATTEMPTS) {
+                updates.locked_until = new Date(Date.now() + LOCK_TIME).toISOString();
+            }
+
+            await supabase
+                .from('admin_users')
+                .update(updates)
+                .eq('id', admin.id);
+
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials'
+            });
+        }
+
+        // Reset login attempts and update last login
+        await supabase
+            .from('admin_users')
+            .update({
+                login_attempts: 0,
+                locked_until: null,
+                last_login: new Date().toISOString()
+            })
+            .eq('id', admin.id);
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                id: admin.id, 
+                username: admin.username 
+            },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            success: true,
+            token,
+            admin: {
+                id: admin.id,
+                username: admin.username
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error',
+            details: error.message
+        });
     }
+});
 
-    const token = bearerHeader.split(' ')[1];
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+
     if (!token) {
-        return res.status(401).json({ error: 'Invalid token format' });
+        return res.status(401).json({
+            success: false,
+            error: 'No token provided'
+        });
     }
 
     try {
@@ -25,299 +144,164 @@ const authenticateToken = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        return res.status(403).json({ error: 'Invalid token' });
+        return res.status(401).json({
+            success: false,
+            error: 'Invalid token'
+        });
     }
 };
 
-// Admin login
-router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        console.log('Login attempt for username:', username);
-
-        const { data: users, error } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('username', username)
-            .single();
-
-        console.log('Database response:', { users, error });
-
-        if (error || !users) {
-            console.log('User not found');
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        console.log('Attempting password verification');
-        console.log('Received password:', password);
-        console.log('Stored hash:', users.password_hash);
-
-        const validPassword = await bcrypt.compare(password, users.password_hash);
-        console.log('Password valid:', validPassword);
-
-        if (!validPassword) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        const token = jwt.sign({ id: users.id, username: users.username }, JWT_SECRET, {
-            expiresIn: '24h'
-        });
-
-        res.json({ token });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: error.message });
-    }
+// Protected route to verify token
+router.get('/verify', verifyToken, (req, res) => {
+    res.json({
+        success: true,
+        user: req.user
+    });
 });
 
 // Get all submissions
-router.get('/submissions', authenticateToken, async (req, res) => {
+router.get('/submissions', verifyToken, async (req, res) => {
     try {
         const { data, error } = await supabase
-            .from('form_data')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get submission details
-router.get('/submission/:id', authenticateToken, async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('form_data')
-            .select(`
-                *,
-                academic_details (*),
-                reference_details (*)
-            `)
-            .eq('id', req.params.id)
-            .single();
-
-        if (error) throw error;
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Export to Excel route (protected by admin authentication)
-router.get('/export', authenticateToken, async (req, res) => {
-    try {
-        console.log('Starting export process...');
-
-        // Fetch all form data with related details
-        const { data: forms, error } = await supabase
             .from('form_data')
             .select(`
                 *,
                 academic_details(*),
                 reference_details(*)
-            `);
+            `)
+            .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error('Supabase query error:', error);
-            throw error;
+        if (error) throw error;
+
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Error fetching submissions:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Export submissions to Excel
+router.get('/export', verifyToken, async (req, res) => {
+    try {
+        // Fetch all submissions with related data
+        const { data: submissions, error } = await supabase
+            .from('form_data')
+            .select(`
+                *,
+                academic_details(*),
+                reference_details(*)
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Transform data for Excel
+        const excelData = submissions.map(submission => ({
+            'Full Name': submission.full_name,
+            'Mobile Number': submission.mobile_number,
+            'Email': submission.email || '',
+            'Address': submission.address,
+            'Date of Birth': new Date(submission.dob).toLocaleDateString(),
+            'Joining Date': new Date(submission.joining_date).toLocaleDateString(),
+            'Aadhar Number': submission.aadhar_number,
+            'PAN Number': submission.pan_number || '',
+            'Father Name': submission.father_name,
+            'Height (cm)': submission.height || '',
+            'Weight (kg)': submission.weight || '',
+            'Academic Qualifications': submission.academic_details?.map(ad => 
+                `${ad.qualification} - ${ad.institute} (${ad.passing_year}, ${ad.percentage}%)`
+            ).join('; ') || '',
+            'References': submission.reference_details?.map(ref =>
+                `${ref.name} (${ref.relation}) - ${ref.contact}`
+            ).join('; ') || '',
+            'Passport Photo URL': submission.passport_photo_url || '',
+            'Aadhar Card URL': submission.aadhar_card_url || '',
+            'Bank Details URL': submission.bank_details_url || '',
+            'Submission Date': new Date(submission.created_at).toLocaleString()
+        }));
+
+        // Create workbook and worksheet
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+
+        // Set column widths
+        const colWidths = [
+            { wch: 20 }, // Full Name
+            { wch: 15 }, // Mobile
+            { wch: 25 }, // Email
+            { wch: 30 }, // Address
+            { wch: 12 }, // DOB
+            { wch: 12 }, // Joining
+            { wch: 15 }, // Aadhar
+            { wch: 12 }, // PAN
+            { wch: 20 }, // Father
+            { wch: 10 }, // Height
+            { wch: 10 }, // Weight
+            { wch: 50 }, // Academic
+            { wch: 50 }, // References
+            { wch: 50 }, // Photo URL
+            { wch: 50 }, // Aadhar URL
+            { wch: 50 }, // Bank URL
+            { wch: 20 }  // Date
+        ];
+        ws['!cols'] = colWidths;
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Submissions');
+
+        // Create downloads directory if it doesn't exist
+        const downloadsDir = path.join(__dirname, '../downloads');
+        if (!fs.existsSync(downloadsDir)) {
+            fs.mkdirSync(downloadsDir, { recursive: true });
         }
 
-        console.log('Retrieved data:', forms);
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `submissions_${timestamp}.xlsx`;
+        const filepath = path.join(downloadsDir, filename);
 
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Form Data');
+        // Write file
+        XLSX.writeFile(wb, filepath);
 
-        // Define columns with proper formatting
-        worksheet.columns = [
-            // Personal Details
-            { header: 'Full Name', key: 'full_name', width: 20 },
-            { header: 'Mobile Number', key: 'mobile_number', width: 15 },
-            { header: 'Address', key: 'address', width: 30 },
-            { header: 'Date of Birth', key: 'dob', width: 15 },
-            { header: 'Joining Date', key: 'joining_date', width: 15 },
-            { header: 'Aadhar Number', key: 'aadhar_number', width: 15 },
-            { header: 'Father Name', key: 'father_name', width: 20 },
-            { header: 'Height', key: 'height', width: 10 },
-            { header: 'Weight', key: 'weight', width: 10 },
-            { header: 'Blood Group', key: 'blood_group', width: 10 },
-            
-            // Academic Details (up to 3 qualifications)
-            { header: 'Qualification 1', key: 'qualification1', width: 20 },
-            { header: 'Institute 1', key: 'institute1', width: 30 },
-            { header: 'Passing Year 1', key: 'passing_year1', width: 15 },
-            { header: 'Percentage 1', key: 'percentage1', width: 10 },
-            
-            { header: 'Qualification 2', key: 'qualification2', width: 20 },
-            { header: 'Institute 2', key: 'institute2', width: 30 },
-            { header: 'Passing Year 2', key: 'passing_year2', width: 15 },
-            { header: 'Percentage 2', key: 'percentage2', width: 10 },
-            
-            { header: 'Qualification 3', key: 'qualification3', width: 20 },
-            { header: 'Institute 3', key: 'institute3', width: 30 },
-            { header: 'Passing Year 3', key: 'passing_year3', width: 15 },
-            { header: 'Percentage 3', key: 'percentage3', width: 10 },
-            
-            // References (up to 2 references)
-            { header: 'Reference Name 1', key: 'ref_name1', width: 20 },
-            { header: 'Reference Mobile 1', key: 'ref_mobile1', width: 15 },
-            { header: 'Reference Relation 1', key: 'ref_relation1', width: 15 },
-            
-            { header: 'Reference Name 2', key: 'ref_name2', width: 20 },
-            { header: 'Reference Mobile 2', key: 'ref_mobile2', width: 15 },
-            { header: 'Reference Relation 2', key: 'ref_relation2', width: 15 },
-            
-            // Document Links
-            { header: 'Passport Photo', key: 'passport_photo_url', width: 50 },
-            { header: 'Aadhar Card', key: 'aadhar_card_url', width: 50 },
-            { header: 'Bank Document', key: 'bank_details_url', width: 50 }
-        ];
-
-        // Style the header row
-        worksheet.getRow(1).font = { bold: true };
-        worksheet.getRow(1).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFE0E0E0' }
-        };
-
-        console.log('Processing form data...');
-
-        // Add data rows
-        forms.forEach(form => {
-            const rowData = {
-                // Personal Details
-                full_name: form.full_name || '',
-                mobile_number: form.mobile_number || '',
-                address: form.address || '',
-                dob: form.dob || '',
-                joining_date: form.joining_date || '',
-                aadhar_number: form.aadhar_number || '',
-                father_name: form.father_name || '',
-                height: form.height || '',
-                weight: form.weight || '',
-                blood_group: form.blood_group || '',
-
-                // Academic Details
-                ...(form.academic_details || []).reduce((acc, academic, index) => {
-                    if (index < 3) {
-                        acc[`qualification${index + 1}`] = academic.qualification || '';
-                        acc[`institute${index + 1}`] = academic.college || '';
-                        acc[`passing_year${index + 1}`] = academic.passing_year || '';
-                        acc[`percentage${index + 1}`] = academic.percentage || '';
-                    }
-                    return acc;
-                }, {}),
-
-                // References
-                ...(form.reference_details || []).reduce((acc, ref, index) => {
-                    if (index < 2) {
-                        acc[`ref_name${index + 1}`] = ref.name || '';
-                        acc[`ref_mobile${index + 1}`] = ref.mobile_number || '';
-                        acc[`ref_relation${index + 1}`] = ref.relation || '';
-                    }
-                    return acc;
-                }, {}),
-
-                // Document Links
-                passport_photo_url: form.passport_photo_url ? {
-                    text: 'View Photo',
-                    hyperlink: form.passport_photo_url
-                } : '',
-                aadhar_card_url: form.aadhar_card_url ? {
-                    text: 'View Aadhar',
-                    hyperlink: form.aadhar_card_url
-                } : '',
-                bank_details_url: form.bank_details_url ? {
-                    text: 'View Bank Document',
-                    hyperlink: form.bank_details_url
-                } : ''
-            };
-
-            worksheet.addRow(rowData);
-        });
-
-        console.log('Applying styles...');
-
-        // Apply styles to all data rows
-        worksheet.eachRow((row, rowNumber) => {
-            if (rowNumber > 1) { // Skip header row
-                row.eachCell((cell) => {
-                    // Add borders to all cells
-                    cell.border = {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
-                    };
-
-                    // Center align specific columns
-                    const centerAlignColumns = ['mobile_number', 'dob', 'joining_date', 'aadhar_number', 'height', 'weight', 'blood_group'];
-                    if (centerAlignColumns.includes(cell.column)) {
-                        cell.alignment = { horizontal: 'center' };
-                    }
-                });
-
-                // Style hyperlinks
-                ['passport_photo_url', 'aadhar_card_url', 'bank_details_url'].forEach(col => {
-                    const cell = row.getCell(col);
-                    if (cell.value && cell.value.hyperlink) {
-                        cell.font = {
-                            color: { argb: '0000FF' },
-                            underline: true
-                        };
-                        cell.alignment = { horizontal: 'center' };
-                    }
-                });
+        // Send file
+        res.download(filepath, filename, (err) => {
+            if (err) {
+                console.error('Download error:', err);
             }
+            // Delete file after sending
+            fs.unlink(filepath, (unlinkErr) => {
+                if (unlinkErr) {
+                    console.error('Error deleting file:', unlinkErr);
+                }
+            });
         });
-
-        // Format date columns
-        worksheet.eachRow((row, rowNumber) => {
-            if (rowNumber > 1) {
-                const dateColumns = ['dob', 'joining_date'];
-                dateColumns.forEach(col => {
-                    const cell = row.getCell(col);
-                    if (cell.value) {
-                        cell.numFmt = 'dd/mm/yyyy';
-                    }
-                });
-            }
-        });
-
-        // Auto-filter for all columns
-        worksheet.autoFilter = {
-            from: { row: 1, column: 1 },
-            to: { row: 1, column: worksheet.columns.length }
-        };
-
-        // Freeze the header row
-        worksheet.views = [
-            { state: 'frozen', xSplit: 0, ySplit: 1 }
-        ];
-
-        console.log('Setting response headers...');
-
-        // Set response headers
-        res.setHeader(
-            'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        );
-        res.setHeader(
-            'Content-Disposition',
-            'attachment; filename=form_data.xlsx'
-        );
-
-        console.log('Writing workbook to response...');
-
-        // Write to response
-        await workbook.xlsx.write(res);
-        
-        console.log('Export completed successfully');
     } catch (error) {
         console.error('Export error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get submission details
+router.get('/submission/:id', verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { data, error } = await supabase
+            .from('form_data')
+            .select(`
+                *,
+                academic_details(*),
+                reference_details(*)
+            `)
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Error fetching submission details:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

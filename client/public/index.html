@@ -272,8 +272,8 @@
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 4px;
-            font-size: 1rem;
             cursor: pointer;
+            font-size: 1rem;
             transition: background-color 0.2s;
         }
 
@@ -377,10 +377,6 @@
 
         .add-button:hover {
             background: #1557b0;
-        }
-
-        .add-button i {
-            font-size: 1rem;
         }
 
         .records-grid {
@@ -660,6 +656,7 @@
             background-color: #1a73e8;
             color: white;
             padding: 8px 16px;
+            border: none;
             border-radius: 4px;
             display: inline-flex;
             align-items: center;
@@ -733,90 +730,83 @@
             max-width: 90%;
             max-height: 90vh;
         }
-    </style>
-    <link rel="stylesheet" href="/css/scanner.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <style>
-        .validation-message {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
 
-        input.invalid, select.invalid {
-            border-color: #dc3545;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-            padding-right: calc(1.5em + 0.75rem);
-        }
-
-        input.valid, select.valid {
-            border-color: #198754;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-            padding-right: calc(1.5em + 0.75rem);
-        }
-
-        .upload-box .validation-message {
-            position: absolute;
-            bottom: -20px;
-            left: 0;
-            right: 0;
+        /* Camera Styles */
+        .camera-container {
             text-align: center;
+            margin: 20px 0;
         }
 
-        /* Date input styles */
-        .date-input-container {
-            position: relative;
+        .camera-container video {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #000;
+        }
+
+        .camera-controls {
             display: flex;
-            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
         }
 
-        .date-input-container input {
-            padding-right: 40px; /* Space for calendar icon */
-        }
-
-        .date-input-container .calendar-icon {
-            position: absolute;
-            right: 10px;
-            color: #666;
+        .capture-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            pointer-events: none;
+            font-weight: 500;
         }
 
-        /* Flatpickr customization */
-        .flatpickr-calendar {
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .capture-btn:hover {
+            background-color: #45a049;
+        }
+
+        .preview-container {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
         }
 
-        .flatpickr-day.selected {
-            background: #1a73e8;
-            border-color: #1a73e8;
+        .preview-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
-        .flatpickr-day:hover {
-            background: #f0f7ff;
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
         }
 
-        .flatpickr-current-month {
-            color: #1a73e8;
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
         }
 
-        .flatpickr-monthDropdown-months {
-            background: #fff;
-        }
-
-        .flatpickr-monthDropdown-month {
-            color: #333;
+        .btn:hover {
+            background-color: #1557b0;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
     <!-- Header -->
@@ -835,7 +825,7 @@
     <div class="form-container">
         <h1 class="form-title">Employee Application Form</h1>
         
-        <form id="userForm">
+        <form id="employeeForm">
             <!-- Personal Information -->
             <h2 class="section-title">Personal Information</h2>
             <div class="form-row">
@@ -844,8 +834,10 @@
                     <input type="text" id="fullName" name="fullName" required>
                 </div>
                 <div class="form-group">
-                    <label for="mobileNumber">Mobile Number</label>
-                    <input type="tel" id="mobileNumber" name="mobileNumber" required>
+                    <label for="mobileNumber">Mobile Number*</label>
+                    <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[6-9][0-9]{9}" maxlength="10" 
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);" required>
+                    <div class="validation-message"></div>
                 </div>
             </div>
 
@@ -875,8 +867,10 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="aadharNumber">Aadhar Number</label>
-                    <input type="text" id="aadharNumber" name="aadharNumber" required>
+                    <label for="aadharNumber">Aadhar Number*</label>
+                    <input type="text" id="aadharNumber" name="aadharNumber" pattern="\d{12}" maxlength="12" 
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 12);" required>
+                    <div class="validation-message"></div>
                 </div>
                 <div class="form-group">
                     <label for="fatherName">Father's Name</label>
@@ -893,21 +887,6 @@
                     <label for="weight">Weight (kg)</label>
                     <input type="number" id="weight" name="weight" required min="30" max="200" step="0.1">
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="bloodGroup">Blood Group</label>
-                <select id="bloodGroup" name="bloodGroup" required>
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                </select>
             </div>
 
             <!-- Academic Details Section -->
@@ -963,7 +942,8 @@
                     <tbody id="referenceTableBody">
                         <tr class="input-row">
                             <td><input type="text" id="newRefName" placeholder="Enter Name" required></td>
-                            <td><input type="tel" id="newRefContact" placeholder="Enter Mobile Number" pattern="[6-9]\d{9}" required></td>
+                            <td><input type="tel" id="refContact" name="refContact" pattern="[6-9][0-9]{9}" maxlength="10"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);" required></td>
                             <td><input type="text" id="newRefRelation" placeholder="Enter Relation" required></td>
                             <td>
                                 <div class="action-buttons">
@@ -983,80 +963,76 @@
             <!-- Document Upload Section -->
             <div class="form-section">
                 <h3>Additional Documents</h3>
-                <div class="upload-section">
-                    <!-- Passport Photo Upload -->
+                
+                <!-- Passport Photo Upload -->
+                <div class="form-group">
+                    <label>Passport Size Photo*</label>
                     <div class="upload-box">
-                        <label>Passport Size Photo*</label>
-                        <div class="preview-container" style="display: none;">
-                            <img id="passportPreview" class="preview-image" alt="Preview">
-                            <div class="preview-actions">
-                                <button type="button" onclick="openFilePreview('passportPreview')" class="preview-button">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button type="button" onclick="retakePhoto('passportUploadBox', 'passportPhoto', 'passportPreview')" class="retake-button">
-                                    <i class="fas fa-redo"></i> Retake
-                                </button>
-                            </div>
-                        </div>
                         <div class="upload-content">
-                            <input type="file" id="passportPhoto" name="passportPhoto" accept="image/*" style="display: none;" onchange="handleFileSelect(this, 'passportPreview')">
-                            <button type="button" onclick="document.getElementById('passportPhoto').click()" class="upload-button">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                            <button type="button" onclick="openCamera('passportPreview', 'passportPhoto')" class="capture-button">
+                            <input type="file" id="passportPhoto" name="passportPhoto" accept="image/*,.pdf" required>
+                            <div class="upload-text">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & Drop or Click to Upload</p>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="openCamera('preview_passportPhoto', 'passportPhoto', true)">
                                 <i class="fas fa-camera"></i> Capture
                             </button>
                         </div>
+                        <div class="preview-container" style="display: none;">
+                            <img id="preview_passportPhoto" src="#" alt="Preview">
+                            <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('passportPhoto', 'preview_passportPhoto')">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                        <div class="validation-message"></div>
                     </div>
+                </div>
 
-                    <!-- Aadhar Card Upload -->
+                <!-- Aadhar Card Upload -->
+                <div class="form-group">
+                    <label>Aadhar Card*</label>
                     <div class="upload-box">
-                        <label>Aadhar Card*</label>
-                        <div class="preview-container" style="display: none;">
-                            <img id="aadharPreview" class="preview-image" alt="Preview">
-                            <div class="preview-actions">
-                                <button type="button" onclick="openFilePreview('aadharPreview')" class="preview-button">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button type="button" onclick="retakePhoto('aadharUploadBox', 'aadharCard', 'aadharPreview')" class="retake-button">
-                                    <i class="fas fa-redo"></i> Retake
-                                </button>
-                            </div>
-                        </div>
                         <div class="upload-content">
-                            <input type="file" id="aadharCard" name="aadharCard" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelect(this, 'aadharPreview')">
-                            <button type="button" onclick="document.getElementById('aadharCard').click()" class="upload-button">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                            <button type="button" onclick="openCamera('aadharPreview', 'aadharCard')" class="capture-button">
-                                <i class="fas fa-camera"></i> Capture
+                            <input type="file" id="aadharCard" name="aadharCard" accept="image/*,.pdf" required>
+                            <div class="upload-text">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & Drop or Click to Upload</p>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="openDocumentScanner('preview_aadharCard', 'aadharCard')">
+                                <i class="fas fa-camera"></i> Scan
                             </button>
                         </div>
+                        <div class="preview-container" style="display: none;">
+                            <img id="preview_aadharCard" src="#" alt="Preview">
+                            <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('aadharCard', 'preview_aadharCard')">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                        <div class="validation-message"></div>
                     </div>
+                </div>
 
-                    <!-- Bank Details Upload -->
+                <!-- Bank Document Upload -->
+                <div class="form-group">
+                    <label>Bank Document*</label>
                     <div class="upload-box">
-                        <label>Bank Document*</label>
-                        <div class="preview-container" style="display: none;">
-                            <img id="bankPreview" class="preview-image" alt="Preview">
-                            <div class="preview-actions">
-                                <button type="button" onclick="openFilePreview('bankPreview')" class="preview-button">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button type="button" onclick="retakePhoto('bankUploadBox', 'bankDoc', 'bankPreview')" class="retake-button">
-                                    <i class="fas fa-redo"></i> Retake
-                                </button>
-                            </div>
-                        </div>
                         <div class="upload-content">
-                            <input type="file" id="bankDoc" name="bankDoc" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelect(this, 'bankPreview')">
-                            <button type="button" onclick="document.getElementById('bankDoc').click()" class="upload-button">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                            <button type="button" onclick="openCamera('bankPreview', 'bankDoc')" class="capture-button">
-                                <i class="fas fa-camera"></i> Capture
+                            <input type="file" id="bankDoc" name="bankDoc" accept="image/*,.pdf" required>
+                            <div class="upload-text">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & Drop or Click to Upload</p>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="openDocumentScanner('preview_bankDoc', 'bankDoc')">
+                                <i class="fas fa-camera"></i> Scan
                             </button>
                         </div>
+                        <div class="preview-container" style="display: none;">
+                            <img id="preview_bankDoc" src="#" alt="Preview">
+                            <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('bankDoc', 'preview_bankDoc')">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                        <div class="validation-message"></div>
                     </div>
                 </div>
             </div>
@@ -1088,9 +1064,9 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Contact Us</h3>
-                <p>📧 support@talenttrack.com</p>
-                <p>📞 +1 (555) 123-4567</p>
-                <p>📍 123 Business Ave, Suite 100</p>
+                <p> support@talenttrack.com</p>
+                <p> +1 (555) 123-4567</p>
+                <p> 123 Business Ave, Suite 100</p>
             </div>
             <div class="footer-section">
                 <h3>Quick Links</h3>
@@ -1109,566 +1085,660 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2025 TalentTrack. All rights reserved.</p>
+            <p> 2025 TalentTrack. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
-    <script src="/js/scanner.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // Validation helper functions
-        const validations = {
-            required: (value) => {
-                return value && value.trim() !== '' ? '' : 'This field is required';
-            },
+        // Global variables for storing records
+        const academicRecords = [];
+        const referenceRecords = [];
+
+        // Function to calculate age
+        function calculateAge(birthDate) {
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
             
-            name: (value) => {
-                if (!value) return 'Name is required';
-                if (!/^[A-Za-z\s]{2,50}$/.test(value)) {
-                    return 'Name should contain only letters and spaces (2-50 characters)';
-                }
-                return '';
-            },
-
-            mobile: (value) => {
-                if (!value) return 'Mobile number is required';
-                if (!/^[6-9]\d{9}$/.test(value)) {
-                    return 'Please enter a valid 10-digit mobile number starting with 6-9';
-                }
-                return '';
-            },
-
-            email: (value) => {
-                if (!value) return 'Email is required';
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return 'Please enter a valid email address';
-                }
-                return '';
-            },
-
-            aadhar: (value) => {
-                if (!value) return 'Aadhar number is required';
-                if (!/^\d{12}$/.test(value)) {
-                    return 'Please enter a valid 12-digit Aadhar number';
-                }
-                return '';
-            },
-
-            pan: (value) => {
-                if (!value) return 'PAN number is required';
-                if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)) {
-                    return 'Please enter a valid PAN number (e.g., ABCDE1234F)';
-                }
-                return '';
-            },
-
-            date: (value) => {
-                if (!value) return 'Date is required';
-                const date = new Date(value);
-                
-                // Additional validation for DOB
-                if (value === document.getElementById('dob').value) {
-                    const age = calculateAge(date);
-                    if (age < 18 || age > 60) {
-                        return `Age must be between 18 and 60 years (current age: ${age})`;
-                    }
-                }
-                
-                // Additional validation for joining date
-                if (value === document.getElementById('joiningDate').value) {
-                    const today = new Date();
-                    if (date < today) {
-                        return 'Joining date must be in the future';
-                    }
-                }
-                
-                return '';
-            },
-
-            age: (value) => {
-                if (!value) return 'Age is required';
-                const age = parseInt(value);
-                if (isNaN(age) || age < 18 || age > 60) {
-                    return 'Age must be between 18 and 60';
-                }
-                return '';
-            },
-
-            pincode: (value) => {
-                if (!value) return 'Pincode is required';
-                if (!/^\d{6}$/.test(value)) {
-                    return 'Please enter a valid 6-digit pincode';
-                }
-                return '';
-            },
-
-            height: (value) => {
-                if (!value) return 'Height is required';
-                const height = parseFloat(value);
-                if (isNaN(height) || height < 100 || height > 250) {
-                    return 'Height must be between 100-250 cm';
-                }
-                return '';
-            },
-
-            weight: (value) => {
-                if (!value) return 'Weight is required';
-                const weight = parseFloat(value);
-                if (isNaN(weight) || weight < 30 || weight > 150) {
-                    return 'Weight must be between 30-150 kg';
-                }
-                return '';
-            },
-
-            bloodGroup: (value) => {
-                if (!value) return 'Blood group is required';
-                if (!/^(A|B|AB|O)[+-]$/.test(value)) {
-                    return 'Please select a valid blood group';
-                }
-                return '';
-            },
-
-            percentage: (value) => {
-                if (!value) return 'Percentage is required';
-                const percent = parseFloat(value);
-                if (isNaN(percent) || percent < 0 || percent > 100) {
-                    return 'Percentage must be between 0-100';
-                }
-                return '';
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
             }
-        };
-
-        // Add input event listeners for real-time validation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add validation to all required inputs
-            document.querySelectorAll('input[required], select[required]').forEach(input => {
-                input.addEventListener('input', function() {
-                    validateField(this);
-                });
-                input.addEventListener('blur', function() {
-                    validateField(this);
-                });
-            });
-
-            // Special validation for specific fields
-            document.getElementById('mobileNumber').addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '').slice(0, 10);
-                validateField(this);
-            });
-
-            document.getElementById('aadharNumber').addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '').slice(0, 12);
-                validateField(this);
-            });
-
-            document.getElementById('height').addEventListener('input', function() {
-                validateField(this);
-            });
-
-            document.getElementById('weight').addEventListener('input', function() {
-                validateField(this);
-            });
-        });
-
-        function validateField(field) {
-            const validationDiv = field.nextElementSibling;
-            let errorMessage = '';
-
-            // Get the validation type from data attribute or field id
-            const validationType = field.dataset.validation || field.id;
-
-            // Check if we have a specific validation for this field
-            if (validations[validationType]) {
-                errorMessage = validations[validationType](field.value);
-            } else {
-                // Default to required validation if no specific validation exists
-                errorMessage = validations.required(field.value);
-            }
-
-            // Create or update validation message element
-            let messageDiv = field.parentElement.querySelector('.validation-message');
-            if (!messageDiv) {
-                messageDiv = document.createElement('div');
-                messageDiv.className = 'validation-message';
-                field.parentElement.appendChild(messageDiv);
-            }
-
-            if (errorMessage) {
-                messageDiv.textContent = errorMessage;
-                messageDiv.style.display = 'block';
-                field.classList.add('invalid');
-                field.classList.remove('valid');
-            } else {
-                messageDiv.style.display = 'none';
-                field.classList.add('valid');
-                field.classList.remove('invalid');
-            }
-
-            return !errorMessage;
+            
+            return age;
         }
 
-        // Form submission validation
-        document.getElementById('userForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            let isValid = true;
-            const requiredFields = document.querySelectorAll('input[required], select[required]');
-            
-            // Validate all required fields
-            requiredFields.forEach(field => {
-                if (!validateField(field)) {
-                    isValid = false;
-                }
-            });
-
-            // Validate file uploads
-            const requiredFiles = ['passportPhoto', 'aadharCard', 'bankDoc'];
-            requiredFiles.forEach(fileId => {
-                const fileInput = document.getElementById(fileId);
-                if (!fileInput.files || !fileInput.files[0]) {
-                    isValid = false;
-                    const messageDiv = fileInput.closest('.upload-box').querySelector('.validation-message') 
-                        || document.createElement('div');
-                    messageDiv.className = 'validation-message';
-                    messageDiv.textContent = 'Please upload the required document';
-                    messageDiv.style.display = 'block';
-                    if (!fileInput.closest('.upload-box').querySelector('.validation-message')) {
-                        fileInput.closest('.upload-box').appendChild(messageDiv);
+        // Function to initialize date pickers
+        function initializeDatePickers() {
+            // Date of Birth picker
+            const dobInput = document.getElementById('dob');
+            if (dobInput) {
+                flatpickr(dobInput, {
+                    dateFormat: "Y-m-d",
+                    maxDate: new Date(),
+                    onChange: function(selectedDates) {
+                        if (selectedDates[0]) {
+                            const age = calculateAge(selectedDates[0]);
+                            const ageInput = document.getElementById('age');
+                            if (ageInput) {
+                                ageInput.value = age;
+                            }
+                            validateField(dobInput);
+                        }
                     }
+                });
+            }
+
+            // Date of Joining picker
+            const joiningDateInput = document.getElementById('joiningDate');
+            if (joiningDateInput) {
+                const threeYearsAgo = new Date();
+                threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
+                
+                flatpickr(joiningDateInput, {
+                    dateFormat: "Y-m-d",
+                    minDate: threeYearsAgo,
+                    maxDate: new Date(),
+                    onChange: function() {
+                        validateField(joiningDateInput);
+                    }
+                });
+            }
+        }
+
+        // Function to initialize file uploads
+        function initializeFileUploads() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                const previewId = 'preview_' + input.id;
+                input.addEventListener('change', function() {
+                    handleFileSelect(this, previewId);
+                });
+            });
+        }
+
+        // Function to handle file selection
+        function handleFileSelect(input, previewId) {
+            if (!input || !previewId) {
+                console.log('Input or previewId is missing');
+                return;
+            }
+
+            if (!input.files || !input.files[0]) {
+                console.log('No file selected');
+                return;
+            }
+
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            if (!preview) {
+                console.log('Preview element not found for ID:', previewId);
+                return;
+            }
+
+            const uploadBox = input.closest('.upload-box');
+            if (!uploadBox) {
+                console.log('Upload box not found');
+                return;
+            }
+
+            const previewContainer = uploadBox.querySelector('.preview-container');
+            const uploadContent = uploadBox.querySelector('.upload-content');
+            const validationMessage = uploadBox.querySelector('.validation-message');
+
+            if (!previewContainer || !uploadContent) {
+                console.log('Preview container or upload content not found');
+                return;
+            }
+
+            // Validate file size (5MB limit)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                if (validationMessage) {
+                    validationMessage.textContent = 'File size must be less than 5MB';
+                    validationMessage.style.display = 'block';
                 }
+                input.value = '';
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                if (validationMessage) {
+                    validationMessage.textContent = 'Please upload an image (JPEG, PNG, GIF) or PDF file';
+                    validationMessage.style.display = 'block';
+                }
+                input.value = '';
+                return;
+            }
+
+            // Show preview
+            if (file.type === 'application/pdf') {
+                preview.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTQgMkgyYy0xLjEgMC0yIC45LTIgMnYxNmMwIDEuMS45IDIgMiAyaDIwYzEuMSAwIDItLjkgMi0yVjhsLTYtNnptNCAxOEg2di0yaDEydjJ6bTAtNEg2di0yaDEydjJ6bS01LTdWM2w2IDZoLTR6Ii8+PC9zdmc+';
+            } else {
+                preview.src = URL.createObjectURL(file);
+            }
+
+            previewContainer.style.display = 'block';
+            uploadContent.style.display = 'none';
+
+            if (validationMessage) {
+                validationMessage.style.display = 'none';
+            }
+        }
+
+        // Function to remove uploaded file
+        function removeFile(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            if (!input || !preview) {
+                console.log('Input or preview element not found');
+                return;
+            }
+            
+            input.value = '';
+            preview.src = '#';
+            
+            const previewContainer = preview.closest('.preview-container');
+            const uploadContent = preview.closest('.upload-box').querySelector('.upload-content');
+            
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            if (uploadContent) {
+                uploadContent.style.display = 'block';
+            }
+        }
+
+        // Function to validate field
+        function validateField(field) {
+            if (!field) return false;
+
+            let isValid = true;
+            const value = field.value.trim();
+            const fieldName = field.name;
+            
+            // Clear previous validation messages
+            const validationMessage = field.parentElement.querySelector('.validation-message');
+            if (validationMessage) {
+                validationMessage.style.display = 'none';
+            }
+            
+            // Check required fields
+            if (field.hasAttribute('required') && !value) {
+                isValid = false;
+                showValidationMessage(field, `${fieldName} is required`);
+                return false;
+            }
+            
+            // Validate based on field type or name
+            if (value) {
+                switch (fieldName) {
+                    case 'mobileNumber':
+                        if (!/^[6-9]\d{9}$/.test(value)) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid 10-digit mobile number starting with 6-9');
+                        }
+                        break;
+                        
+                    case 'email':
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid email address');
+                        }
+                        break;
+                        
+                    case 'aadharNumber':
+                        if (!/^\d{12}$/.test(value)) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid 12-digit Aadhar number');
+                        }
+                        break;
+                        
+                    case 'panNumber':
+                        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid PAN number');
+                        }
+                        break;
+
+                    case 'refContact':
+                        if (!/^[6-9]\d{9}$/.test(value)) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid 10-digit contact number starting with 6-9');
+                        }
+                        break;
+
+                    case 'passingYear':
+                        const year = parseInt(value);
+                        if (year < 1950 || year > new Date().getFullYear()) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid year between 1950 and current year');
+                        }
+                        break;
+
+                    case 'percentage':
+                        const percent = parseFloat(value);
+                        if (percent < 0 || percent > 100) {
+                            isValid = false;
+                            showValidationMessage(field, 'Please enter a valid percentage between 0 and 100');
+                        }
+                        break;
+                }
+            }
+            
+            return isValid;
+        }
+
+        // Function to show validation message
+        function showValidationMessage(field, message) {
+            const validationMessage = field.parentElement.querySelector('.validation-message');
+            if (validationMessage) {
+                validationMessage.textContent = message;
+                validationMessage.style.display = 'block';
+            }
+        }
+
+        // Function to initialize form validation
+        function initializeFormValidation() {
+            const form = document.getElementById('employeeForm');
+            if (!form) {
+                console.log('Form not found');
+                return;
+            }
+
+            const fields = form.querySelectorAll('input[required], select[required], textarea[required]');
+            
+            // Add validation on blur and input
+            fields.forEach(field => {
+                field.addEventListener('blur', () => validateField(field));
+                field.addEventListener('input', () => validateField(field));
             });
 
-            // Validate academic details
-            const academicRows = document.querySelectorAll('#academicTableBody tr');
-            if (academicRows.length === 1 && academicRows[0].classList.contains('empty-message')) {
-                isValid = false;
-                alert('Please add at least one academic qualification');
-            }
-
-            // Validate references
-            const referenceRows = document.querySelectorAll('#referenceTableBody tr');
-            if (referenceRows.length === 1 && referenceRows[0].classList.contains('empty-message')) {
-                isValid = false;
-                alert('Please add at least one reference');
-            }
-
-            if (isValid) {
-                // Proceed with form submission
-                submitForm();
-            } else {
-                // Scroll to the first error
-                const firstError = document.querySelector('.invalid, .validation-message[style*="block"]');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
-
-        // File handling functions
-        function handleFileSelect(input, previewId) {
-            const file = input.files[0];
-            if (file) {
-                const preview = document.getElementById(previewId);
-                const uploadBox = input.closest('.upload-box');
-                const previewContainer = uploadBox.querySelector('.preview-container');
-                const uploadContent = uploadBox.querySelector('.upload-content');
+            // Form submission handler
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        preview.dataset.type = 'image';
-                        preview.dataset.originalFile = file;
+                let isValid = true;
+                let errors = [];
+
+                // Validate all required fields
+                fields.forEach(field => {
+                    if (!validateField(field)) {
+                        isValid = false;
+                        errors.push(`Please fill in ${field.name}`);
+                    }
+                });
+
+                if (!isValid) {
+                    alert(errors.join('\n'));
+                    return;
+                }
+
+                try {
+                    const rawFormData = new FormData(this);
+                    
+                    // Create a proper FormData object for file uploads
+                    const formData = new FormData();
+
+                    // Add files if they exist
+                    const passportPhoto = document.getElementById('passportPhoto').files[0];
+                    const aadharCard = document.getElementById('aadharCard').files[0];
+                    const bankDoc = document.getElementById('bankDoc').files[0];
+
+                    if (passportPhoto) formData.append('passportPhoto', passportPhoto);
+                    if (aadharCard) formData.append('aadharCard', aadharCard);
+                    if (bankDoc) formData.append('bankDoc', bankDoc);
+
+                    // Prepare the JSON data
+                    const jsonData = {
+                        full_name: rawFormData.get('fullName'),
+                        mobile_number: rawFormData.get('mobileNumber'),
+                        email: rawFormData.get('email'),
+                        address: rawFormData.get('address'),
+                        dob: rawFormData.get('dob'),
+                        joining_date: rawFormData.get('joiningDate'),
+                        aadhar_number: rawFormData.get('aadharNumber'),
+                        pan_number: rawFormData.get('panNumber'),
+                        father_name: rawFormData.get('fatherName'),
+                        height: rawFormData.get('height'),
+                        weight: rawFormData.get('weight'),
+                        academic_details: academicRecords.map(record => ({
+                            qualification: record.qualification,
+                            institute: record.institute,
+                            passing_year: parseInt(record.passingYear),
+                            percentage: parseFloat(record.percentage)
+                        })),
+                        reference_details: referenceRecords.map(record => ({
+                            name: record.name,
+                            contact: record.contact,
+                            relation: record.relation
+                        }))
                     };
-                    reader.readAsDataURL(file);
-                } else if (file.type === 'application/pdf') {
-                    preview.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTQgMkgyYy0xLjEgMC0yIC45LTIgMnYxNmMwIDEuMS45IDIgMiAyaDIwYzEuMSAwIDItLjkgMi0yVjhsLTYtNnptNCAxOEg2di0yaDEydjJ6bTAtNEg2di0yaDEydjJ6bS01LTdWM2w2IDZoLTR6Ii8+PC9zdmc+';
-                    preview.dataset.type = 'pdf';
-                    preview.dataset.originalFile = file;
+
+                    // Clean up empty values
+                    Object.keys(jsonData).forEach(key => {
+                        if (jsonData[key] === '' || jsonData[key] === undefined) {
+                            jsonData[key] = null;
+                        }
+                    });
+
+                    // Add the JSON data to FormData
+                    formData.append('data', JSON.stringify(jsonData));
+
+                    const response = await fetch('/api/form/submit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Form submission failed');
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Form submitted successfully!');
+                        window.location.href = 'success.html';
+                    } else {
+                        throw new Error(result.error || 'Form submission failed');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message || 'Failed to submit form. Please try again.');
                 }
+            });
+        }
+
+        // Function to save academic record
+        function saveAcademicRecord() {
+            const qualification = document.getElementById('newQualification').value;
+            const institute = document.getElementById('newInstitute').value;
+            const passingYear = document.getElementById('newPassingYear').value;
+            const percentage = document.getElementById('newPercentage').value;
+
+            // Validate all fields
+            if (!qualification || !institute || !passingYear || !percentage) {
+                alert('Please fill all academic details');
+                return;
+            }
+
+            // Validate passing year
+            const year = parseInt(passingYear);
+            if (year < 1950 || year > new Date().getFullYear()) {
+                alert('Please enter a valid passing year between 1950 and current year');
+                return;
+            }
+
+            // Validate percentage
+            const percentValue = parseFloat(percentage);
+            if (percentValue < 0 || percentValue > 100) {
+                alert('Please enter a valid percentage between 0 and 100');
+                return;
+            }
+
+            // Create record object
+            const record = {
+                qualification,
+                institute,
+                passingYear: year,
+                percentage: percentValue
+            };
+
+            // Add to records array
+            academicRecords.push(record);
+
+            // Update table
+            const tbody = document.getElementById('academicTableBody');
+            const emptyMessage = tbody.querySelector('.empty-message');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${qualification}</td>
+                <td>${institute}</td>
+                <td>${year}</td>
+                <td>${percentValue}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeAcademicRecord(this)">
+                        Remove
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+
+            // Clear form
+            document.getElementById('newQualification').value = '';
+            document.getElementById('newInstitute').value = '';
+            document.getElementById('newPassingYear').value = '';
+            document.getElementById('newPercentage').value = '';
+
+            // Hide validation message if visible
+            const validationMessage = document.querySelector('#academicDetails .validation-message');
+            if (validationMessage) {
+                validationMessage.style.display = 'none';
+            }
+        }
+
+        // Function to remove academic record
+        function removeAcademicRecord(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentNode;
+            const rowIndex = Array.from(tbody.children).indexOf(row);
+            
+            // Remove from array and table
+            academicRecords.splice(rowIndex, 1);
+            row.remove();
+
+            // Show empty message if no records
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `
+                    <tr class="empty-message">
+                        <td colspan="5" class="text-center">No academic records added</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Function to save reference
+        function saveReference() {
+            const name = document.getElementById('newRefName').value;
+            const contact = document.getElementById('refContact').value;
+            const relation = document.getElementById('newRefRelation').value;
+
+            // Validate all fields
+            if (!name || !contact || !relation) {
+                alert('Please fill all reference details');
+                return;
+            }
+
+            // Validate contact number
+            if (!/^[6-9]\d{9}$/.test(contact)) {
+                alert('Please enter a valid 10-digit mobile number starting with 6-9');
+                return;
+            }
+
+            // Create reference object
+            const reference = {
+                name,
+                contact,
+                relation
+            };
+
+            // Add to references array
+            referenceRecords.push(reference);
+
+            // Update table
+            const tbody = document.getElementById('referenceTableBody');
+            const emptyMessage = tbody.querySelector('.empty-message');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${name}</td>
+                <td>${contact}</td>
+                <td>${relation}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeReference(this)">
+                        Remove
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+
+            // Clear form
+            document.getElementById('newRefName').value = '';
+            document.getElementById('refContact').value = '';
+            document.getElementById('newRefRelation').value = '';
+
+            // Hide validation message if visible
+            const validationMessage = document.querySelector('#referenceDetails .validation-message');
+            if (validationMessage) {
+                validationMessage.style.display = 'none';
+            }
+        }
+
+        // Function to remove reference
+        function removeReference(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentNode;
+            const rowIndex = Array.from(tbody.children).indexOf(row);
+            
+            // Remove from array and table
+            referenceRecords.splice(rowIndex, 1);
+            row.remove();
+
+            // Show empty message if no records
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `
+                    <tr class="empty-message">
+                        <td colspan="4" class="text-center">No references added</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Camera and Document Scanner Functions
+        let stream = null;
+        let videoElement = null;
+        let canvasElement = null;
+
+        function openCamera(previewId, inputId, isPassport = false) {
+            // Create modal for camera
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4>Take Photo</h4>
+                        <button type="button" class="close" onclick="closeCamera()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <video id="video" ${isPassport ? 'style="aspect-ratio: 1"' : ''} autoplay playsinline></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div class="camera-overlay ${isPassport ? 'passport-overlay' : ''}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="capturePhoto('${previewId}', '${inputId}')">
+                            <i class="fas fa-camera"></i> Capture
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeCamera()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Get video element
+            videoElement = document.getElementById('video');
+            canvasElement = document.getElementById('canvas');
+
+            // Start camera
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: isPassport ? 'user' : 'environment',
+                    aspectRatio: isPassport ? 1 : undefined
+                } 
+            })
+            .then(function(mediaStream) {
+                stream = mediaStream;
+                videoElement.srcObject = stream;
+            })
+            .catch(function(err) {
+                console.error("Error accessing camera:", err);
+                alert("Could not access camera. Please make sure you have granted camera permissions.");
+                closeCamera();
+            });
+        }
+
+        function openDocumentScanner(previewId, inputId) {
+            openCamera(previewId, inputId, false);
+        }
+
+        function capturePhoto(previewId, inputId) {
+            if (!videoElement || !canvasElement) return;
+
+            // Set canvas dimensions to match video
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+
+            // Draw video frame to canvas
+            const context = canvasElement.getContext('2d');
+            context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            // Convert canvas to blob
+            canvasElement.toBlob(function(blob) {
+                // Create file from blob
+                const file = new File([blob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
                 
+                // Set file to input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById(inputId).files = dataTransfer.files;
+
+                // Update preview
+                const preview = document.getElementById(previewId);
+                const previewContainer = preview.closest('.preview-container');
+                const uploadContent = preview.closest('.upload-box').querySelector('.upload-content');
+                
+                preview.src = URL.createObjectURL(file);
                 previewContainer.style.display = 'block';
                 uploadContent.style.display = 'none';
+
+                // Close camera
+                closeCamera();
+            }, 'image/jpeg', 0.8);
+        }
+
+        function closeCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
-        }
-
-        function openFilePreview(previewId) {
-            const preview = document.getElementById(previewId);
-            const modal = document.getElementById('previewModal');
-            const modalImage = document.getElementById('modalPreviewImage');
-            const modalPdf = document.getElementById('modalPreviewPdf');
-
-            if (preview.dataset.type === 'image') {
-                modalImage.src = preview.src;
-                modalImage.style.display = 'block';
-                modalPdf.style.display = 'none';
-            } else if (preview.dataset.type === 'pdf') {
-                const fileUrl = URL.createObjectURL(preview.dataset.originalFile);
-                modalPdf.src = fileUrl;
-                modalPdf.style.display = 'block';
-                modalImage.style.display = 'none';
-            }
-
-            modal.classList.add('active');
-        }
-
-        function closePreviewModal() {
-            const modal = document.getElementById('previewModal');
-            modal.classList.remove('active');
-        }
-
-        // Modified form submission to include file URLs
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
             
-            if (!validateForm()) {
-                return;
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
             }
 
-            const formData = new FormData();
-            
-            // Add file uploads
-            const passportFile = document.getElementById('passportPhoto').files[0];
-            const aadharFile = document.getElementById('aadharCard').files[0];
-            const bankFile = document.getElementById('bankDoc').files[0];
+            videoElement = null;
+            canvasElement = null;
+        }
 
-            if (!passportFile || !aadharFile || !bankFile) {
-                alert('Please upload all required documents');
-                return;
-            }
-
-            try {
-                // Upload passport photo
-                const passportFormData = new FormData();
-                passportFormData.append('file', passportFile);
-                const passportRes = await fetch('/api/upload?folder=passport', {
-                    method: 'POST',
-                    body: passportFormData
-                });
-                const passportData = await passportRes.json();
-
-                // Upload aadhar card
-                const aadharFormData = new FormData();
-                aadharFormData.append('file', aadharFile);
-                const aadharRes = await fetch('/api/upload?folder=aadhar', {
-                    method: 'POST',
-                    body: aadharFormData
-                });
-                const aadharData = await aadharRes.json();
-
-                // Upload bank document
-                const bankFormData = new FormData();
-                bankFormData.append('file', bankFile);
-                const bankRes = await fetch('/api/upload?folder=bank', {
-                    method: 'POST',
-                    body: bankFormData
-                });
-                const bankData = await bankRes.json();
-
-                // Now submit the form with file URLs
-                const formData = {
-                    // ... other form fields ...
-                    passportUrl: passportData.url,
-                    aadharUrl: aadharData.url,
-                    bankUrl: bankData.url
-                };
-
-                const response = await fetch('/api/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Form submission failed');
-                }
-
-                alert('Form submitted successfully!');
-                form.reset();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while submitting the form');
-            }
+        // Document ready handler
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFormValidation();
+            initializeFileUploads();
+            initializeDatePickers();
         });
-
-        // Academic Details Management
-        let academicRecords = [];
-        let referenceRecords = [];
-
-        function saveAcademicRecord() {
-            const qualification = document.getElementById('newQualification');
-            const institute = document.getElementById('newInstitute');
-            const passingYear = document.getElementById('newPassingYear');
-            const percentage = document.getElementById('newPercentage');
-
-            // Reset error states
-            [qualification, institute, passingYear, percentage].forEach(input => {
-                input.classList.remove('input-error');
-            });
-
-            // Validate inputs
-            let isValid = true;
-            if (!qualification.value) {
-                qualification.classList.add('input-error');
-                isValid = false;
-            }
-            if (!institute.value) {
-                institute.classList.add('input-error');
-                isValid = false;
-            }
-            if (!passingYear.value || passingYear.value < 1900 || passingYear.value > 2099) {
-                passingYear.classList.add('input-error');
-                isValid = false;
-            }
-            if (!percentage.value || percentage.value < 0 || percentage.value > 100) {
-                percentage.classList.add('input-error');
-                isValid = false;
-            }
-
-            if (!isValid) {
-                alert('Please fill all required fields correctly');
-                return;
-            }
-
-            const record = {
-                id: Date.now(),
-                qualification: qualification.value,
-                institute: institute.value,
-                passingYear: passingYear.value,
-                percentage: percentage.value
-            };
-
-            academicRecords.push(record);
-            updateAcademicRecordsDisplay();
-
-            // Clear inputs
-            qualification.value = '';
-            institute.value = '';
-            passingYear.value = '';
-            percentage.value = '';
-        }
-
-        function saveReference() {
-            const name = document.getElementById('newRefName');
-            const contact = document.getElementById('newRefContact');
-            const relation = document.getElementById('newRefRelation');
-
-            // Reset error states
-            [name, contact, relation].forEach(input => {
-                input.classList.remove('input-error');
-            });
-
-            // Validate inputs
-            let isValid = true;
-            if (!name.value) {
-                name.classList.add('input-error');
-                isValid = false;
-            }
-            if (!contact.value || !/^[6-9]\d{9}$/.test(contact.value)) {
-                contact.classList.add('input-error');
-                isValid = false;
-            }
-            if (!relation.value) {
-                relation.classList.add('input-error');
-                isValid = false;
-            }
-
-            if (!isValid) {
-                alert('Please fill all required fields correctly. Mobile number should be 10 digits starting with 6-9');
-                return;
-            }
-
-            const reference = {
-                id: Date.now(),
-                name: name.value,
-                contact: contact.value,
-                relation: relation.value
-            };
-
-            referenceRecords.push(reference);
-            updateReferenceRecordsDisplay();
-
-            // Clear inputs
-            name.value = '';
-            contact.value = '';
-            relation.value = '';
-        }
-
-        function updateAcademicRecordsDisplay() {
-            const tbody = document.getElementById('academicTableBody');
-            const emptyMessage = document.getElementById('academicEmptyMessage');
-            const inputRow = tbody.querySelector('.input-row');
-
-            if (academicRecords.length === 0) {
-                tbody.innerHTML = '';
-                tbody.appendChild(inputRow);
-                tbody.appendChild(emptyMessage);
-                return;
-            }
-
-            tbody.innerHTML = '';
-            tbody.appendChild(inputRow);
-            
-            academicRecords.forEach(record => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${record.qualification}</td>
-                    <td>${record.institute}</td>
-                    <td>${record.passingYear}</td>
-                    <td>${record.percentage}%</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-button edit" onclick="editAcademicRecord(${record.id})" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-button delete" onclick="deleteAcademicRecord(${record.id})" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateReferenceRecordsDisplay() {
-            const tbody = document.getElementById('referenceTableBody');
-            const emptyMessage = document.getElementById('referenceEmptyMessage');
-            const inputRow = tbody.querySelector('.input-row');
-
-            if (referenceRecords.length === 0) {
-                tbody.innerHTML = '';
-                tbody.appendChild(inputRow);
-                tbody.appendChild(emptyMessage);
-                return;
-            }
-
-            tbody.innerHTML = '';
-            tbody.appendChild(inputRow);
-
-            referenceRecords.forEach(ref => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${ref.name}</td>
-                    <td>${ref.contact}</td>
-                    <td>${ref.relation}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-button edit" onclick="editReference(${ref.id})" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-button delete" onclick="deleteReference(${ref.id})" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
     </script>
 </body>
 </html>

@@ -2,76 +2,80 @@ const supabase = require('../config/supabase');
 
 async function saveFormData(formData) {
     try {
-        // Insert main form data
-        const { data: formResult, error: formError } = await supabase
-            .from('form_data')
-            .insert([{
-                full_name: formData.fullName,
-                mobile_number: formData.mobileNumber,
-                address: formData.address,
-                dob: formData.dob,
-                joining_date: formData.joiningDate,
-                aadhar_number: formData.aadharNumber,
-                father_name: formData.fatherName,
-                height: formData.height,
-                weight: formData.weight,
-                blood_group: formData.bloodGroup,
-                passport_photo_url: formData.passportUrl,
-                aadhar_card_url: formData.aadharUrl,
-                bank_details_url: formData.bankUrl
-            }])
-            .select()
-            .single();
+        // Prepare form data with only the fields we want to insert
+        const formDataToSave = {
+            full_name: formData.full_name,
+            mobile_number: formData.mobile_number,
+            email: formData.email || null,
+            address: formData.address,
+            dob: formData.dob,
+            joining_date: formData.joining_date,
+            aadhar_number: formData.aadhar_number,
+            pan_number: formData.pan_number || null,
+            father_name: formData.father_name,
+            height: formData.height ? parseFloat(formData.height) : null,
+            weight: formData.weight ? parseFloat(formData.weight) : null,
+            passport_photo_url: formData.passport_photo_url || null,
+            aadhar_card_url: formData.aadhar_card_url || null,
+            bank_details_url: formData.bank_details_url || null
+        };
+
+        // Use rpc call to insert data
+        const { data: formResult, error: formError } = await supabase.rpc('insert_form_data', formDataToSave);
 
         if (formError) {
-            console.error('Form insert error:', formError);
-            throw formError;
+            console.error('Error saving form data:', formError);
+            throw new Error(formError.message || 'Failed to save form data');
         }
 
-        const formId = formResult.id;
+        if (!formResult) {
+            throw new Error('No form data returned after insert');
+        }
 
-        // Insert academic details
-        if (formData.academicDetails && formData.academicDetails.length > 0) {
-            const academicDetailsWithFormId = formData.academicDetails.map(detail => ({
+        const formId = formResult;
+
+        // Save academic details
+        if (formData.academic_details && formData.academic_details.length > 0) {
+            const academicRecords = formData.academic_details.map(record => ({
                 form_id: formId,
-                qualification: detail.qualification,
-                college: detail.college,
-                passing_year: detail.passingYear,
-                percentage: detail.percentage
+                qualification: record.qualification,
+                institute: record.institute,
+                passing_year: parseInt(record.passing_year),
+                percentage: parseFloat(record.percentage)
             }));
 
             const { error: academicError } = await supabase
                 .from('academic_details')
-                .insert(academicDetailsWithFormId);
+                .insert(academicRecords);
 
             if (academicError) {
-                console.error('Academic details insert error:', academicError);
-                throw academicError;
+                console.error('Error saving academic details:', academicError);
+                throw new Error(academicError.message || 'Failed to save academic details');
             }
         }
 
-        // Insert references
-        if (formData.references && formData.references.length > 0) {
-            const referencesWithFormId = formData.references.map(ref => ({
+        // Save reference details
+        if (formData.reference_details && formData.reference_details.length > 0) {
+            const referenceRecords = formData.reference_details.map(record => ({
                 form_id: formId,
-                name: ref.name,
-                mobile_number: ref.mobileNumber,
-                relation: ref.relation
+                name: record.name,
+                contact: record.contact,
+                relation: record.relation
             }));
 
             const { error: referenceError } = await supabase
                 .from('reference_details')
-                .insert(referencesWithFormId);
+                .insert(referenceRecords);
 
             if (referenceError) {
-                console.error('References insert error:', referenceError);
-                throw referenceError;
+                console.error('Error saving reference details:', referenceError);
+                throw new Error(referenceError.message || 'Failed to save reference details');
             }
         }
 
-        return { formId };
+        return { formId, success: true };
     } catch (error) {
-        console.error('Error saving form data:', error);
+        console.error('Error in saveFormData:', error);
         throw error;
     }
 }

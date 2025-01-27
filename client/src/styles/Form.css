@@ -1,0 +1,71 @@
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.photo-section {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.camera-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.camera-container video {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.captured-image-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.captured-image-container img {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.form-container input {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.academic-detail, .reference {
+    border: 1px solid #eee;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button[type="submit"] {
+    background-color: #2196F3;
+    margin-top: 20px;
+    width: 100%;
+}
+
+button[type="submit"]:hover {
+    background-color: #1976D2;
+}

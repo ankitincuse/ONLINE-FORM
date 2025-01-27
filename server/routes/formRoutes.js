@@ -23,7 +23,7 @@ async function ensureBucketExists() {
 
         if (listError) {
             console.error('Error listing buckets:', listError);
-            throw listError;
+            throw new Error('Failed to check storage bucket');
         }
 
         const formUploadsBucket = buckets.find(b => b.name === 'form-uploads');
@@ -36,12 +36,12 @@ async function ensureBucketExists() {
                 .createBucket('form-uploads', {
                     public: true,
                     fileSizeLimit: 5242880, // 5MB in bytes
-                    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif']
+                    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
                 });
 
             if (createError) {
                 console.error('Error creating bucket:', createError);
-                throw createError;
+                throw new Error('Failed to create storage bucket');
             }
             console.log('Bucket created successfully');
 
@@ -54,7 +54,7 @@ async function ensureBucketExists() {
 
             if (updateError) {
                 console.error('Error updating bucket:', updateError);
-                throw updateError;
+                throw new Error('Failed to configure storage bucket');
             }
         }
     } catch (error) {
@@ -68,6 +68,10 @@ async function uploadToSupabase(file, folder) {
     try {
         await ensureBucketExists();
 
+        if (!file || !file.buffer) {
+            throw new Error('Invalid file data');
+        }
+
         const timestamp = Date.now();
         const fileName = `${folder}/${timestamp}-${file.originalname}`;
 
@@ -80,13 +84,17 @@ async function uploadToSupabase(file, folder) {
 
         if (error) {
             console.error('Error uploading file:', error);
-            throw error;
+            throw new Error('Failed to upload file');
         }
 
         // Get public URL
         const { data: publicUrl } = supabase.storage
             .from('form-uploads')
             .getPublicUrl(fileName);
+
+        if (!publicUrl || !publicUrl.publicUrl) {
+            throw new Error('Failed to get file URL');
+        }
 
         return publicUrl.publicUrl;
     } catch (error) {
@@ -95,34 +103,107 @@ async function uploadToSupabase(file, folder) {
     }
 }
 
-// Handle file upload
-router.post('/upload', upload.single('file'), async (req, res) => {
-    try {
-        if (!req.file) {
-            throw new Error('No file uploaded');
-        }
-
-        const { type } = req.body;
-        if (!type) {
-            throw new Error('File type not specified');
-        }
-
-        const url = await uploadToSupabase(req.file, type);
-        res.json({ url });
-    } catch (error) {
-        console.error('Upload error:', error);
-        res.status(400).json({ error: error.message });
-    }
-});
-
 // Handle form submission
-router.post('/submit', async (req, res) => {
+const formUpload = upload.fields([
+    { name: 'passportPhoto', maxCount: 1 },
+    { name: 'aadharCard', maxCount: 1 },
+    { name: 'bankDoc', maxCount: 1 }
+]);
+
+router.post('/submit', formUpload, async (req, res) => {
     try {
-        const result = await saveFormData(req.body);
-        res.json(result);
+        // Parse the JSON data from the form
+        let formData;
+        try {
+            formData = JSON.parse(req.body.data);
+        } catch (error) {
+            console.error('Error parsing form data:', error);
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid form data format'
+            });
+        }
+
+        // Validate required fields
+        const requiredFields = [
+            'full_name',
+            'mobile_number',
+            'address',
+            'dob',
+            'joining_date',
+            'aadhar_number',
+            'father_name'
+        ];
+
+        for (const field of requiredFields) {
+            if (!formData[field]) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Missing required field: ${field}`
+                });
+            }
+        }
+
+        // Validate files
+        const requiredFiles = ['passportPhoto', 'aadharCard', 'bankDoc'];
+        for (const field of requiredFiles) {
+            if (!req.files || !req.files[field] || !req.files[field][0]) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Missing required file: ${field}`
+                });
+            }
+        }
+
+        // Upload files and get URLs
+        try {
+            for (const [fieldName, files] of Object.entries(req.files)) {
+                if (files && files[0]) {
+                    const file = files[0];
+                    const url = await uploadToSupabase(file, fieldName);
+                    
+                    switch (fieldName) {
+                        case 'passportPhoto':
+                            formData.passport_photo_url = url;
+                            break;
+                        case 'aadharCard':
+                            formData.aadhar_card_url = url;
+                            break;
+                        case 'bankDoc':
+                            formData.bank_details_url = url;
+                            break;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to upload files'
+            });
+        }
+
+        // Save to database
+        try {
+            const result = await saveFormData(formData);
+            return res.json({
+                success: true,
+                message: 'Form submitted successfully',
+                data: result
+            });
+        } catch (error) {
+            console.error('Error saving form data:', error);
+            return res.status(500).json({
+                success: false,
+                error: error.message || 'Failed to save form data'
+            });
+        }
     } catch (error) {
         console.error('Form submission error:', error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Form submission failed'
+        });
     }
 });
 
