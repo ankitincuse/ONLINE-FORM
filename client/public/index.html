@@ -49,24 +49,9 @@
         }
 
         .logo img {
-            height: 40px;
+            max-height: 40px;
             width: auto;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-color);
+            object-fit: contain;
         }
 
         /* Form Container */
@@ -812,235 +797,232 @@
     <!-- Header -->
     <header class="header">
         <a href="/" class="logo">
-            <img src="/images/logo.svg" alt="TalentTrack" width="150" height="40">
+            <img id="headerLogo" src="/default-logo.png" alt="Company Logo">
         </a>
-        <nav class="nav-links">
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-            <a href="/contact">Contact</a>
-        </nav>
     </header>
 
     <!-- Form Container -->
-    <div class="form-container">
-        <h1 class="form-title">Employee Application Form</h1>
-        
-        <form id="employeeForm">
-            <!-- Personal Information -->
-            <h2 class="section-title">Personal Information</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" name="fullName" required>
-                </div>
-                <div class="form-group">
-                    <label for="mobileNumber">Mobile Number*</label>
-                    <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[6-9][0-9]{9}" maxlength="10" 
-                        oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);" required>
-                    <div class="validation-message"></div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="address">Address</label>
-                <textarea id="address" name="address" rows="3" required></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="dob">Date of Birth*</label>
-                    <div class="date-input-container">
-                        <input type="text" id="dob" name="dob" required placeholder="DD/MM/YYYY" 
-                            data-validation="date" data-min-age="18" data-max-age="60">
-                        <i class="fas fa-calendar calendar-icon"></i>
+    <div class="container">
+        <div class="form-container">
+            <h1 class="form-title">Employee Application Form</h1>
+            
+            <form id="employeeForm">
+                <!-- Personal Information -->
+                <h2 class="section-title">Personal Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mobileNumber">Mobile Number*</label>
+                        <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[6-9][0-9]{9}" maxlength="10" 
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);" required>
+                        <div class="validation-message"></div>
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="joiningDate">Date of Joining*</label>
-                    <div class="date-input-container">
-                        <input type="text" id="joiningDate" name="joiningDate" required placeholder="DD/MM/YYYY" 
-                            data-validation="date" data-future-only="true">
-                        <i class="fas fa-calendar calendar-icon"></i>
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dob">Date of Birth*</label>
+                        <div class="date-input-container">
+                            <input type="text" id="dob" name="dob" required placeholder="DD/MM/YYYY" 
+                                data-validation="date" data-min-age="18" data-max-age="60">
+                            <i class="fas fa-calendar calendar-icon"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="joiningDate">Date of Joining*</label>
+                        <div class="date-input-container">
+                            <input type="text" id="joiningDate" name="joiningDate" required placeholder="DD/MM/YYYY" 
+                                data-validation="date" data-future-only="true">
+                            <i class="fas fa-calendar calendar-icon"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="aadharNumber">Aadhar Number*</label>
-                    <input type="text" id="aadharNumber" name="aadharNumber" pattern="\d{12}" maxlength="12" 
-                        oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 12);" required>
-                    <div class="validation-message"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="aadharNumber">Aadhar Number*</label>
+                        <input type="text" id="aadharNumber" name="aadharNumber" pattern="\d{12}" maxlength="12" 
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 12);" required>
+                        <div class="validation-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fatherName">Father's Name</label>
+                        <input type="text" id="fatherName" name="fatherName" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="fatherName">Father's Name</label>
-                    <input type="text" id="fatherName" name="fatherName" required>
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="height">Height (cm)</label>
-                    <input type="number" id="height" name="height" required min="100" max="250" step="0.1">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" name="height" required min="100" max="250" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" name="weight" required min="30" max="200" step="0.1">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="weight">Weight (kg)</label>
-                    <input type="number" id="weight" name="weight" required min="30" max="200" step="0.1">
-                </div>
-            </div>
 
-            <!-- Academic Details Section -->
-            <div class="form-section">
-                <div class="section-header">
-                    <h3>Academic Details</h3>
+                <!-- Academic Details Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3>Academic Details</h3>
+                    </div>
+                    <table class="custom-table" id="academicTable">
+                        <thead>
+                            <tr>
+                                <th>Qualification</th>
+                                <th>College/Institute</th>
+                                <th>Passing Year</th>
+                                <th>Percentage</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="academicTableBody">
+                            <tr class="input-row">
+                                <td><input type="text" id="newQualification" placeholder="Enter Qualification" required></td>
+                                <td><input type="text" id="newInstitute" placeholder="Enter College/Institute" required></td>
+                                <td><input type="number" id="newPassingYear" placeholder="Year" min="1900" max="2099" required></td>
+                                <td><input type="number" id="newPercentage" placeholder="%" min="0" max="100" step="0.01" required></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-button save" onclick="saveAcademicRecord()" title="Save">
+                                            <i class="fas fa-save"></i> Save
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="empty-message" id="academicEmptyMessage">
+                                <td colspan="5">No academic records added yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <table class="custom-table" id="academicTable">
-                    <thead>
-                        <tr>
-                            <th>Qualification</th>
-                            <th>College/Institute</th>
-                            <th>Passing Year</th>
-                            <th>Percentage</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="academicTableBody">
-                        <tr class="input-row">
-                            <td><input type="text" id="newQualification" placeholder="Enter Qualification" required></td>
-                            <td><input type="text" id="newInstitute" placeholder="Enter College/Institute" required></td>
-                            <td><input type="number" id="newPassingYear" placeholder="Year" min="1900" max="2099" required></td>
-                            <td><input type="number" id="newPercentage" placeholder="%" min="0" max="100" step="0.01" required></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="action-button save" onclick="saveAcademicRecord()" title="Save">
-                                        <i class="fas fa-save"></i> Save
-                                    </button>
+
+                <!-- References Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3>References</h3>
+                    </div>
+                    <table class="custom-table" id="referenceTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Mobile Number</th>
+                                <th>Relation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="referenceTableBody">
+                            <tr class="input-row">
+                                <td><input type="text" id="newRefName" placeholder="Enter Name" required></td>
+                                <td><input type="tel" id="refContact" name="refContact" pattern="[6-9][0-9]{9}" maxlength="10"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);" required></td>
+                                <td><input type="text" id="newRefRelation" placeholder="Enter Relation" required></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-button save" onclick="saveReference()" title="Save">
+                                            <i class="fas fa-save"></i> Save
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="empty-message" id="referenceEmptyMessage">
+                                <td colspan="4">No references added yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Document Upload Section -->
+                <div class="form-section">
+                    <h3>Additional Documents</h3>
+                    
+                    <!-- Passport Photo Upload -->
+                    <div class="form-group">
+                        <label>Passport Size Photo*</label>
+                        <div class="upload-box">
+                            <div class="upload-content">
+                                <input type="file" id="passportPhoto" name="passportPhoto" accept="image/*,.pdf" required>
+                                <div class="upload-text">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Drag & Drop or Click to Upload</p>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr class="empty-message" id="academicEmptyMessage">
-                            <td colspan="5">No academic records added yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                                <button type="button" class="btn btn-primary" onclick="openCamera('preview_passportPhoto', 'passportPhoto', true)">
+                                    <i class="fas fa-camera"></i> Capture
+                                </button>
+                            </div>
+                            <div class="preview-container" style="display: none;">
+                                <img id="preview_passportPhoto" src="#" alt="Preview">
+                                <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('passportPhoto', 'preview_passportPhoto')">
+                                    <i class="fas fa-times"></i> Remove
+                                </button>
+                            </div>
+                            <div class="validation-message"></div>
+                        </div>
+                    </div>
 
-            <!-- References Section -->
-            <div class="form-section">
-                <div class="section-header">
-                    <h3>References</h3>
-                </div>
-                <table class="custom-table" id="referenceTable">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Mobile Number</th>
-                            <th>Relation</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="referenceTableBody">
-                        <tr class="input-row">
-                            <td><input type="text" id="newRefName" placeholder="Enter Name" required></td>
-                            <td><input type="tel" id="refContact" name="refContact" pattern="[6-9][0-9]{9}" maxlength="10"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);" required></td>
-                            <td><input type="text" id="newRefRelation" placeholder="Enter Relation" required></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="action-button save" onclick="saveReference()" title="Save">
-                                        <i class="fas fa-save"></i> Save
-                                    </button>
+                    <!-- Aadhar Card Upload -->
+                    <div class="form-group">
+                        <label>Aadhar Card*</label>
+                        <div class="upload-box">
+                            <div class="upload-content">
+                                <input type="file" id="aadharCard" name="aadharCard" accept="image/*,.pdf" required>
+                                <div class="upload-text">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Drag & Drop or Click to Upload</p>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr class="empty-message" id="referenceEmptyMessage">
-                            <td colspan="4">No references added yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Document Upload Section -->
-            <div class="form-section">
-                <h3>Additional Documents</h3>
-                
-                <!-- Passport Photo Upload -->
-                <div class="form-group">
-                    <label>Passport Size Photo*</label>
-                    <div class="upload-box">
-                        <div class="upload-content">
-                            <input type="file" id="passportPhoto" name="passportPhoto" accept="image/*,.pdf" required>
-                            <div class="upload-text">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Drag & Drop or Click to Upload</p>
+                                <button type="button" class="btn btn-primary" onclick="openDocumentScanner('preview_aadharCard', 'aadharCard')">
+                                    <i class="fas fa-camera"></i> Scan
+                                </button>
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="openCamera('preview_passportPhoto', 'passportPhoto', true)">
-                                <i class="fas fa-camera"></i> Capture
-                            </button>
+                            <div class="preview-container" style="display: none;">
+                                <img id="preview_aadharCard" src="#" alt="Preview">
+                                <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('aadharCard', 'preview_aadharCard')">
+                                    <i class="fas fa-times"></i> Remove
+                                </button>
+                            </div>
+                            <div class="validation-message"></div>
                         </div>
-                        <div class="preview-container" style="display: none;">
-                            <img id="preview_passportPhoto" src="#" alt="Preview">
-                            <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('passportPhoto', 'preview_passportPhoto')">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
+                    </div>
+
+                    <!-- Bank Document Upload -->
+                    <div class="form-group">
+                        <label>Bank Document*</label>
+                        <div class="upload-box">
+                            <div class="upload-content">
+                                <input type="file" id="bankDoc" name="bankDoc" accept="image/*,.pdf" required>
+                                <div class="upload-text">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Drag & Drop or Click to Upload</p>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="openDocumentScanner('preview_bankDoc', 'bankDoc')">
+                                    <i class="fas fa-camera"></i> Scan
+                                </button>
+                            </div>
+                            <div class="preview-container" style="display: none;">
+                                <img id="preview_bankDoc" src="#" alt="Preview">
+                                <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('bankDoc', 'preview_bankDoc')">
+                                    <i class="fas fa-times"></i> Remove
+                                </button>
+                            </div>
+                            <div class="validation-message"></div>
                         </div>
-                        <div class="validation-message"></div>
                     </div>
                 </div>
 
-                <!-- Aadhar Card Upload -->
-                <div class="form-group">
-                    <label>Aadhar Card*</label>
-                    <div class="upload-box">
-                        <div class="upload-content">
-                            <input type="file" id="aadharCard" name="aadharCard" accept="image/*,.pdf" required>
-                            <div class="upload-text">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Drag & Drop or Click to Upload</p>
-                            </div>
-                            <button type="button" class="btn btn-primary" onclick="openDocumentScanner('preview_aadharCard', 'aadharCard')">
-                                <i class="fas fa-camera"></i> Scan
-                            </button>
-                        </div>
-                        <div class="preview-container" style="display: none;">
-                            <img id="preview_aadharCard" src="#" alt="Preview">
-                            <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('aadharCard', 'preview_aadharCard')">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
-                        </div>
-                        <div class="validation-message"></div>
-                    </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Submit Application</button>
                 </div>
-
-                <!-- Bank Document Upload -->
-                <div class="form-group">
-                    <label>Bank Document*</label>
-                    <div class="upload-box">
-                        <div class="upload-content">
-                            <input type="file" id="bankDoc" name="bankDoc" accept="image/*,.pdf" required>
-                            <div class="upload-text">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Drag & Drop or Click to Upload</p>
-                            </div>
-                            <button type="button" class="btn btn-primary" onclick="openDocumentScanner('preview_bankDoc', 'bankDoc')">
-                                <i class="fas fa-camera"></i> Scan
-                            </button>
-                        </div>
-                        <div class="preview-container" style="display: none;">
-                            <img id="preview_bankDoc" src="#" alt="Preview">
-                            <button type="button" class="btn btn-danger remove-btn" onclick="removeFile('bankDoc', 'preview_bankDoc')">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
-                        </div>
-                        <div class="validation-message"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn">Submit Application</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Preview Modal -->
@@ -1732,6 +1714,26 @@
             videoElement = null;
             canvasElement = null;
         }
+
+        // Load company logo
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch('/api/admin/settings');
+                if (response.ok) {
+                    const { settings } = await response.json();
+                    if (settings && settings.logo_url) {
+                        // Update both header and form logos
+                        const headerLogo = document.getElementById('headerLogo');
+                        headerLogo.src = settings.logo_url;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading logo:', error);
+            }
+        }
+
+        // Load logo when page loads
+        loadCompanyLogo();
 
         // Document ready handler
         document.addEventListener('DOMContentLoaded', function() {

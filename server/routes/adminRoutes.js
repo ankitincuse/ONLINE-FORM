@@ -1,292 +1,219 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/supabase');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const XLSX = require('xlsx');
-const path = require('path');
-const fs = require('fs');
+const multer = require('multer');
+const { createClient } = require('@supabase/supabase-js');
 
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-123';
+// Initialize Supabase client with service role key for better permissions
+const supabaseUrl = 'https://wmonulauzpsxbnncbcri.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indtb251bGF1enBzeGJubmNiY3JpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNzU1MzgzMiwiZXhwIjoyMDUzMTI5ODMyfQ.Ouc9Dx77WwwSqHQbjS5NYuiTcmkJZD-Mjv5Sa6cOBzc';
 
-// Max login attempts before locking
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Admin login route
-router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        console.log('Login attempt for username:', username);
+// JWT Secret - should match the one used in login
+const JWT_SECRET = '766daee06a233a1c69a7e353b9d96d1b833c39763b37a43f9eafa2fd87409e23';
 
-        // Simple validation
-        if (!username || !password) {
-            return res.status(400).json({
-                success: false,
-                error: 'Username and password are required'
-            });
-        }
-
-        // Query admin user
-        const { data: users, error } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('username', username)
-            .single();
-
-        if (error) {
-            console.error('Database error:', error);
-            return res.status(500).json({
-                success: false,
-                error: 'Database error'
-            });
-        }
-
-        if (!users) {
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid credentials'
-            });
-        }
-
-        const admin = users;
-
-        // Check if account is locked
-        if (admin.locked_until && new Date(admin.locked_until) > new Date()) {
-            const remainingTime = Math.ceil((new Date(admin.locked_until) - new Date()) / 1000 / 60);
-            return res.status(401).json({
-                success: false,
-                error: `Account is locked. Try again in ${remainingTime} minutes`
-            });
-        }
-
-        // Verify password
-        const { data: verified, error: pwError } = await supabase
-            .rpc('verify_password', {
-                p_username: username,
-                p_password: password
-            });
-
-        if (pwError || !verified) {
-            // Increment login attempts
-            const attempts = (admin.login_attempts || 0) + 1;
-            const updates = {
-                login_attempts: attempts
-            };
-
-            // Lock account if max attempts reached
-            if (attempts >= MAX_LOGIN_ATTEMPTS) {
-                updates.locked_until = new Date(Date.now() + LOCK_TIME).toISOString();
-            }
-
-            await supabase
-                .from('admin_users')
-                .update(updates)
-                .eq('id', admin.id);
-
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid credentials'
-            });
-        }
-
-        // Reset login attempts and update last login
-        await supabase
-            .from('admin_users')
-            .update({
-                login_attempts: 0,
-                locked_until: null,
-                last_login: new Date().toISOString()
-            })
-            .eq('id', admin.id);
-
-        // Generate JWT token
-        const token = jwt.sign(
-            { 
-                id: admin.id, 
-                username: admin.username 
-            },
-            JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        res.json({
-            success: true,
-            token,
-            admin: {
-                id: admin.id,
-                username: admin.username
-            }
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Internal server error',
-            details: error.message
-        });
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
     }
 });
 
-// Middleware to verify JWT token
+// Verify token middleware
 const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            error: 'No token provided'
-        });
-    }
-
     try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'No token provided' });
+        }
+
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();
     } catch (error) {
-        return res.status(401).json({
-            success: false,
-            error: 'Invalid token'
-        });
+        console.error('Token verification error:', error);
+        return res.status(401).json({ error: 'Invalid token' });
     }
 };
 
-// Protected route to verify token
-router.get('/verify', verifyToken, (req, res) => {
-    res.json({
-        success: true,
-        user: req.user
-    });
+// Login endpoint
+router.post('/login', async (req, res) => {
+    try {
+        console.log('Login attempt:', req.body);
+        const { username, password } = req.body;
+
+        // Input validation
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
+        // Get user from database
+        console.log('Fetching user from database...');
+        const { data: users, error: fetchError } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('username', username);
+
+        console.log('Database response:', { users, error: fetchError });
+
+        if (fetchError) {
+            console.error('Database error:', fetchError);
+            return res.status(500).json({ error: 'Database error: ' + fetchError.message });
+        }
+
+        if (!users || users.length === 0) {
+            console.log('No user found with username:', username);
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        if (users.length > 1) {
+            console.error('Multiple users found with username:', username);
+            return res.status(500).json({ error: 'Database integrity error: Multiple users found' });
+        }
+
+        const user = users[0];
+        console.log('User found:', { id: user.id, username: user.username });
+
+        // Check if account is locked
+        if (user.account_locked) {
+            console.log('Account is locked:', username);
+            return res.status(401).json({ error: 'Account is locked. Please contact administrator.' });
+        }
+
+        // Verify password
+        console.log('Verifying password...');
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        console.log('Password validation:', { isPasswordValid });
+
+        if (!isPasswordValid) {
+            // Increment failed attempts
+            const failedAttempts = (user.failed_attempts || 0) + 1;
+            const shouldLock = failedAttempts >= 5;
+
+            console.log('Invalid password. Updating failed attempts:', { failedAttempts, shouldLock });
+
+            // Update user record
+            const { error: updateError } = await supabase
+                .from('admin_users')
+                .update({
+                    failed_attempts: failedAttempts,
+                    last_failed_attempt: new Date().toISOString(),
+                    account_locked: shouldLock
+                })
+                .eq('id', user.id);
+
+            if (updateError) {
+                console.error('Failed to update user record:', updateError);
+            }
+
+            if (shouldLock) {
+                return res.status(401).json({ error: 'Account has been locked due to too many failed attempts' });
+            }
+
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Reset failed attempts on successful login
+        console.log('Login successful. Resetting failed attempts...');
+        const { error: resetError } = await supabase
+            .from('admin_users')
+            .update({
+                failed_attempts: 0,
+                last_failed_attempt: null,
+                account_locked: false
+            })
+            .eq('id', user.id);
+
+        if (resetError) {
+            console.error('Failed to reset failed attempts:', resetError);
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user.id, username: user.username },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        console.log('Sending successful response...');
+        res.json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                username: user.username
+            }
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Internal server error: ' + error.message });
+    }
 });
 
 // Get all submissions
 router.get('/submissions', verifyToken, async (req, res) => {
     try {
-        const { data, error } = await supabase
+        console.log('Fetching all submissions...');
+        const { data: formData, error: formError } = await supabase
             .from('form_data')
-            .select(`
-                *,
-                academic_details(*),
-                reference_details(*)
-            `)
+            .select('*')
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
-
-        res.json({ success: true, data });
-    } catch (error) {
-        console.error('Error fetching submissions:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Export submissions to Excel
-router.get('/export', verifyToken, async (req, res) => {
-    try {
-        // Fetch all submissions with related data
-        const { data: submissions, error } = await supabase
-            .from('form_data')
-            .select(`
-                *,
-                academic_details(*),
-                reference_details(*)
-            `)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Transform data for Excel
-        const excelData = submissions.map(submission => ({
-            'Full Name': submission.full_name,
-            'Mobile Number': submission.mobile_number,
-            'Email': submission.email || '',
-            'Address': submission.address,
-            'Date of Birth': new Date(submission.dob).toLocaleDateString(),
-            'Joining Date': new Date(submission.joining_date).toLocaleDateString(),
-            'Aadhar Number': submission.aadhar_number,
-            'PAN Number': submission.pan_number || '',
-            'Father Name': submission.father_name,
-            'Height (cm)': submission.height || '',
-            'Weight (kg)': submission.weight || '',
-            'Academic Qualifications': submission.academic_details?.map(ad => 
-                `${ad.qualification} - ${ad.institute} (${ad.passing_year}, ${ad.percentage}%)`
-            ).join('; ') || '',
-            'References': submission.reference_details?.map(ref =>
-                `${ref.name} (${ref.relation}) - ${ref.contact}`
-            ).join('; ') || '',
-            'Passport Photo URL': submission.passport_photo_url || '',
-            'Aadhar Card URL': submission.aadhar_card_url || '',
-            'Bank Details URL': submission.bank_details_url || '',
-            'Submission Date': new Date(submission.created_at).toLocaleString()
-        }));
-
-        // Create workbook and worksheet
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(excelData);
-
-        // Set column widths
-        const colWidths = [
-            { wch: 20 }, // Full Name
-            { wch: 15 }, // Mobile
-            { wch: 25 }, // Email
-            { wch: 30 }, // Address
-            { wch: 12 }, // DOB
-            { wch: 12 }, // Joining
-            { wch: 15 }, // Aadhar
-            { wch: 12 }, // PAN
-            { wch: 20 }, // Father
-            { wch: 10 }, // Height
-            { wch: 10 }, // Weight
-            { wch: 50 }, // Academic
-            { wch: 50 }, // References
-            { wch: 50 }, // Photo URL
-            { wch: 50 }, // Aadhar URL
-            { wch: 50 }, // Bank URL
-            { wch: 20 }  // Date
-        ];
-        ws['!cols'] = colWidths;
-
-        // Add worksheet to workbook
-        XLSX.utils.book_append_sheet(wb, ws, 'Submissions');
-
-        // Create downloads directory if it doesn't exist
-        const downloadsDir = path.join(__dirname, '../downloads');
-        if (!fs.existsSync(downloadsDir)) {
-            fs.mkdirSync(downloadsDir, { recursive: true });
+        if (formError) {
+            console.error('Error fetching form data:', formError);
+            throw formError;
         }
 
-        // Generate filename with timestamp
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `submissions_${timestamp}.xlsx`;
-        const filepath = path.join(downloadsDir, filename);
+        // Fetch academic details for all forms
+        const { data: academicDetails, error: academicError } = await supabase
+            .from('academic_details')
+            .select('*')
+            .in('form_id', formData.map(f => f.id));
 
-        // Write file
-        XLSX.writeFile(wb, filepath);
+        if (academicError) {
+            console.error('Error fetching academic details:', academicError);
+            throw academicError;
+        }
 
-        // Send file
-        res.download(filepath, filename, (err) => {
-            if (err) {
-                console.error('Download error:', err);
-            }
-            // Delete file after sending
-            fs.unlink(filepath, (unlinkErr) => {
-                if (unlinkErr) {
-                    console.error('Error deleting file:', unlinkErr);
-                }
-            });
-        });
+        // Fetch reference details for all forms
+        const { data: referenceDetails, error: referenceError } = await supabase
+            .from('reference_details')
+            .select('*')
+            .in('form_id', formData.map(f => f.id));
+
+        if (referenceError) {
+            console.error('Error fetching reference details:', referenceError);
+            throw referenceError;
+        }
+
+        // Combine the data
+        const submissions = formData.map(form => ({
+            ...form,
+            academic_details: academicDetails.filter(a => a.form_id === form.id),
+            reference_details: referenceDetails.filter(r => r.form_id === form.id)
+        }));
+
+        console.log(`Found ${submissions.length} submissions`);
+        res.json({ submissions });
+
     } catch (error) {
-        console.error('Export error:', error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error in /submissions:', error);
+        res.status(500).json({ error: 'Failed to fetch submissions' });
     }
 });
 
-// Get submission details
+// Get single submission
 router.get('/submission/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
+        console.log('Fetching submission:', id);
 
-        const { data, error } = await supabase
+        const { data: submission, error } = await supabase
             .from('form_data')
             .select(`
                 *,
@@ -296,12 +223,129 @@ router.get('/submission/:id', verifyToken, async (req, res) => {
             .eq('id', id)
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Error fetching submission:', error);
+            throw error;
+        }
 
-        res.json({ success: true, data });
+        if (!submission) {
+            return res.status(404).json({ error: 'Submission not found' });
+        }
+
+        console.log('Found submission:', submission.id);
+        res.json({ submission });
+
     } catch (error) {
-        console.error('Error fetching submission details:', error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error in /submission/:id:', error);
+        res.status(500).json({ error: 'Failed to fetch submission' });
+    }
+});
+
+// Upload company logo
+router.post('/upload-logo', verifyToken, upload.single('logo'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const file = req.file;
+        console.log('Uploading logo:', file.originalname);
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const fileName = `company_logo_${timestamp}.${file.originalname.split('.').pop()}`;
+        
+        // First check if the bucket exists, if not create it
+        const { data: buckets, error: bucketsError } = await supabase
+            .storage
+            .listBuckets();
+
+        if (bucketsError) {
+            console.error('Error listing buckets:', bucketsError);
+            throw bucketsError;
+        }
+
+        const BUCKET_NAME = 'company-logos';
+        const bucketExists = buckets.some(bucket => bucket.name === BUCKET_NAME);
+        
+        if (!bucketExists) {
+            console.log('Creating bucket:', BUCKET_NAME);
+            const { error: createError } = await supabase
+                .storage
+                .createBucket(BUCKET_NAME, {
+                    public: true,
+                    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif']
+                });
+
+            if (createError) {
+                console.error('Error creating bucket:', createError);
+                throw createError;
+            }
+        }
+
+        // Upload the file
+        console.log('Uploading file to bucket...');
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from(BUCKET_NAME)
+            .upload(fileName, file.buffer, {
+                contentType: file.mimetype,
+                cacheControl: '3600'
+            });
+
+        if (uploadError) {
+            console.error('Error uploading file:', uploadError);
+            throw uploadError;
+        }
+
+        // Get the public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(fileName);
+
+        // Update company settings
+        console.log('Updating company settings with new logo URL...');
+        const { error: settingsError } = await supabase
+            .from('company_settings')
+            .upsert({
+                id: 1, // Using a fixed ID for single company
+                logo_url: publicUrl,
+                updated_at: new Date().toISOString()
+            });
+
+        if (settingsError) {
+            console.error('Error updating company settings:', settingsError);
+            throw settingsError;
+        }
+
+        console.log('Logo uploaded successfully');
+        res.json({ 
+            message: 'Logo uploaded successfully',
+            url: publicUrl
+        });
+
+    } catch (error) {
+        console.error('Error in /upload-logo:', error);
+        res.status(500).json({ error: 'Failed to upload logo' });
+    }
+});
+
+// Get company settings
+router.get('/settings', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('company_settings')
+            .select('*')
+            .eq('id', 1)
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({ settings: data });
+    } catch (error) {
+        console.error('Error fetching company settings:', error);
+        res.status(500).json({ error: 'Failed to fetch company settings' });
     }
 });
 

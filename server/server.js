@@ -46,8 +46,8 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something broke!' });
+    console.error('Global error handler:', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
 app.listen(PORT, () => {
