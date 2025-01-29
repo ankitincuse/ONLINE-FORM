@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "vercel-build": "echo 'Building...'"
+    "vercel-build": "cd server && npm install"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
